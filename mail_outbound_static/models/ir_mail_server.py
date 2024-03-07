@@ -12,6 +12,14 @@ class IrMailServer(models.Model):
 
     _inherit = "ir.mail_server"
 
+    reply_to = fields.Char(
+        string="Reply To",
+        help="Set this in order to email from a specific address."
+        " If the original message's 'From' does not match with the domain"
+        " whitelist then it is replaced with this value. If does match with the"
+        " domain whitelist then the original message's 'From' will not change",
+    )
+    
     smtp_from = fields.Char(
         string="Email From",
         help="Set this in order to email from a specific address."
@@ -93,6 +101,9 @@ class IrMailServer(models.Model):
                     message.replace_header("Return-Path", email_from)
                 else:
                     message.add_header("Return-Path", email_from)
+        if mail_server.reply_to:
+            reply_to = formataddr((name_from, mail_server.reply_to))
+            message.replace_header("Reply-To", reply_to)
         return smtp_from, smtp_to_list, message
 
     @api.model
